@@ -14,7 +14,7 @@ namespace Renderer {
 
         void rasterize_and_put(const Point &p);
         void rasterize_and_put(const Sector &s);
-        //void rasterize_and_put(const Triangle &t);
+        void rasterize_and_put(const Triangle &t);
     };
 
     struct ViewBox {

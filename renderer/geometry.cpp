@@ -16,8 +16,6 @@ namespace Renderer {
     }
 
     Eigen::Vector4d transform_and_normalize(const Eigen::Vector4d &v, const Eigen::Matrix4d &m) {
-        std::cout << m << "\n";
-        std::cout << v << "\n";
         Eigen::Vector4d new_v = normalize(m * v);
         return new_v;
     }
