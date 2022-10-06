@@ -6,6 +6,9 @@ void draw(const Renderer::Screen &screen) {
     int w = screen.w;
     int h = screen.h;
     sf::RenderWindow window(sf::VideoMode(w, h), "Renderer");
+
+    auto *pixels = new sf::Uint8[w * h * 4];
+
     while (window.isOpen()) {
         // check all the window's events that were triggered since the last iteration of the loop
         sf::Event event;
@@ -16,7 +19,6 @@ void draw(const Renderer::Screen &screen) {
         }
         window.clear(sf::Color::Black);
 
-        auto *pixels = new sf::Uint8[w * h * 4];
 
         sf::Texture texture;
         texture.create(w, h);
@@ -60,15 +62,6 @@ void example1() {
     world.add_sector(sector);
     world.add_triangle(triangle1);
     world.add_triangle(triangle2);
-
-    auto object = Renderer::Object();
-    object.add_triangle(triangle1);
-    object.add_triangle(triangle2);
-
-    object.translate({2, 1, -2});
-    object.rotate_local({1, 0, 1}, 3);
-
-    world.add_object(object);
 
 
     // Переводим все объекты в координаты "куба зрения"
@@ -178,5 +171,5 @@ void example4() {
 }
 
 int main() {
-    example4();
+    example1();
 }
