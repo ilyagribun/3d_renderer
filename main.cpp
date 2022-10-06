@@ -7,7 +7,7 @@ void draw(const Renderer::Screen &screen) {
     int h = screen.h;
     sf::RenderWindow window(sf::VideoMode(w, h), "Renderer");
 
-    auto *pixels = new sf::Uint8[w * h * 4];
+    auto pixels = std::vector<sf::Uint8>(h * w * 4);
 
     while (window.isOpen()) {
         // check all the window's events that were triggered since the last iteration of the loop
@@ -31,7 +31,7 @@ void draw(const Renderer::Screen &screen) {
             pixels[i + 3] = 200;
         }
 
-        texture.update(pixels);
+        texture.update(pixels.data());
 
         window.draw(sprite);
 
@@ -72,7 +72,7 @@ void example1() {
     Renderer::Screen screen(w, h);
     view_box.map_to_pixels(screen);
 
-    // Рисуем экран одним из доступных нам способов
+    // Рисуем экран с помощью SFML
     draw(screen);
 }
 
@@ -102,16 +102,13 @@ void example2() {
 
     world.add_object(obj);
 
-    // Переводим все объекты в координаты "куба зрения"
     auto view_box = world.make_view_box();
 
-    // Создаем экран с разрешением 800 * 600 пикселей и отрисовываем все объекты на нем
     int w = 1024;
     int h = 1024;
     Renderer::Screen screen(w, h);
     view_box.map_to_pixels(screen);
 
-    // Рисуем экран одним из доступных нам способов
     draw(screen);
 }
 
@@ -124,16 +121,13 @@ void example3() {
                                Eigen::Vector3d {2, 3, -1000},
                                {0, 0, 255}});
     }
-    // Переводим все объекты в координаты "куба зрения"
     auto view_box = world.make_view_box();
 
-    // Создаем экран с разрешением 800 * 600 пикселей и отрисовываем все объекты на нем
     int w = 800;
     int h = 600;
     Renderer::Screen screen(w, h);
     view_box.map_to_pixels(screen);
 
-    // Рисуем экран одним из доступных нам способов
     draw(screen);
 }
 
@@ -159,13 +153,11 @@ void example4() {
 
     auto view_box = world.make_view_box();
 
-    // Создаем экран с разрешением 800 * 600 пикселей и отрисовываем все объекты на нем
     int w = 1024;
     int h = 1024;
     Renderer::Screen screen(w, h);
     view_box.map_to_pixels(screen);
 
-    // Рисуем экран одним из доступных нам способов
     draw(screen);
 }
 
