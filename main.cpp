@@ -19,7 +19,6 @@ void draw(const Renderer::Screen &screen) {
         }
         window.clear(sf::Color::Black);
 
-
         sf::Texture texture;
         texture.create(w, h);
 
