@@ -145,6 +145,38 @@ void example3() {
     draw(screen);
 }
 
+void example4() {
+    Renderer::World world;
+    Renderer::Object overlapping;
+    overlapping.add_triangle({Eigen::Vector3d{0.3, 1.0, -2.5},
+                       {2.7, 0.85, -2},
+                       {2.7, 1.15, -2 },
+                       {255, 0, 0}});
+    overlapping.add_triangle({Eigen::Vector3d{2.53, 0.71, -2.5},
+                        {1.46, 2.86, -2},
+                        {1.2, 2.71, -2 },
+                        {0, 255, 0}});
+
+    overlapping.add_triangle({Eigen::Vector3d{1.667, 2.79, -2.5},
+                        {0.337, 0.786, -2},
+                        {0.597, 0.636, -2 },
+                        {0, 0, 255}});
+
+    overlapping.translate({-1, -1, -5});
+    world.add_object(overlapping);
+
+    auto view_box = world.make_view_box();
+
+    // Создаем экран с разрешением 800 * 600 пикселей и отрисовываем все объекты на нем
+    int w = 1024;
+    int h = 1024;
+    Renderer::Screen screen(w, h);
+    view_box.map_to_pixels(screen);
+
+    // Рисуем экран одним из доступных нам способов
+    draw(screen);
+}
+
 int main() {
-    example3();
+    example4();
 }
