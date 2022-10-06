@@ -140,4 +140,8 @@ namespace Renderer {
         }
         return triangulated;
     }
+
+    void World::change_frustum_params(double l, double r, double b, double t, double n, double f) {
+        frustum_.change_params(l, r, b, t, n, f);
+    }
 }

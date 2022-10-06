@@ -5,13 +5,12 @@
 
 namespace Renderer {
     class World {
-    public:
         Frustum frustum_;
         std::vector<Object> objects_;
         std::vector<Triangle> triangles_;
         std::vector<Point> points_;
         std::vector<Sector> sectors_;
-
+    public:
         World();
 
         void add_triangle(Triangle triangle);
@@ -21,6 +20,8 @@ namespace Renderer {
         void add_sector(Sector sector);
 
         void add_object(Object object);
+
+        void change_frustum_params(double l, double r, double b, double t, double n, double f);
 
         ViewBox make_view_box();
 
