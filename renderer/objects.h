@@ -57,10 +57,38 @@ namespace Renderer {
         Eigen::Matrix4d get_transform() const;
         void set_matrix(Eigen::Matrix4d m);
 
+        Object& transform(const Eigen::Matrix4d& m);
+
         std::vector<Triangle> get_triangles() const;
         std::vector<Point> get_points() const;
         std::vector<Sector> get_sectors() const;
-
-        void project(const Eigen::Matrix4d &proj);
     };
+
+    class Line;
+
+    class Plane {
+        Eigen::Vector4d nd_;
+    public:
+        Plane() = default;
+        Plane(Eigen::Vector4d nd);
+        Plane(Eigen::Vector3d n, double d);
+        Plane(const Eigen::Vector3d &p1, const Eigen::Vector3d &p2, const Eigen::Vector3d &p3);
+
+        double distance(const Eigen::Vector4d& point) const;
+        friend Eigen::Vector4d plane_line_intersection(const Line& line, const Plane& plane);
+    };
+
+    class Line {
+        Eigen::Vector4d s_;
+        Eigen::Vector4d v_;
+    public:
+        Line(Eigen::Vector4d s, Eigen::Vector4d v);
+        Line(const Sector& sector);
+
+        Eigen::Vector4d operator()(double t) const;
+
+        friend Eigen::Vector4d plane_line_intersection(const Line& line, const Plane& plane);
+    };
+
+    Eigen::Vector4d plane_line_intersection(const Line& line, const Plane& plane);
 }

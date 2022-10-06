@@ -1,11 +1,11 @@
 #include "objects.h"
 #include "geometry.h"
+#include <Eigen/Dense>
+#include <iostream>
 
 #include <utility>
 
 namespace Renderer {
-
-
     Triangle::Triangle(Eigen::Vector4d p1, Eigen::Vector4d p2, Eigen::Vector4d p3,
                        Color color)
             : p1_(normalize(std::move(p1))),
@@ -100,6 +100,7 @@ namespace Renderer {
         transform_matrix_ = std::move(m);
     }
 
+
     std::vector<Triangle> Object::get_triangles() const {
         std::vector<Triangle> result;
         for (auto & triangle : triangles_) {
@@ -124,7 +125,52 @@ namespace Renderer {
         return result;
     }
 
-    void Object::project(const Eigen::Matrix4d &proj) {
-        transform_matrix_ = proj * transform_matrix_;
+    Object& Object::transform(const Eigen::Matrix4d &m) {
+        transform_matrix_ = m * transform_matrix_;
+        return *this;
+    }
+
+    Plane::Plane(Eigen::Vector4d nd): nd_(std::move(nd)) {
+    }
+
+    Plane::Plane(Eigen::Vector3d n, double d) {
+        n.normalize();
+        nd_[0] = n[0];
+        nd_[1] = n[1];
+        nd_[2] = n[2];
+        nd_[3] = d;
+    }
+
+    Plane::Plane(const Eigen::Vector3d &p1, const Eigen::Vector3d &p2, const Eigen::Vector3d &p3) {
+        Eigen::Vector3d v1 = p2 - p1;
+        Eigen::Vector3d v2 = p3 - p1;
+        Eigen::Vector3d n = v1.cross(v2);
+        n.normalize();
+        double d = -p1.dot(n);
+        nd_[0] = n[0];
+        nd_[1] = n[1];
+        nd_[2] = n[2];
+        nd_[3] = d;
+    }
+
+    double Plane::distance(const Eigen::Vector4d &point) const {
+        return nd_.dot(normalize(point));
+    }
+
+    Line::Line(Eigen::Vector4d s, Eigen::Vector4d v): s_(std::move(s)), v_(std::move(v)) {}
+
+    Line::Line(const Sector &sector) {
+        assert(sector.p2_[3] != 0);
+        v_ = normalize(sector.p1_) - normalize(sector.p2_);
+        s_ = normalize(sector.p1_);
+    }
+
+    Eigen::Vector4d Line::operator()(double t) const {
+        return s_ + v_ * t;
+    }
+
+    Eigen::Vector4d plane_line_intersection(const Line& line, const Plane& plane) {
+        assert(plane.nd_.dot(line.v_) != 0);
+        return line(-1 * plane.nd_.dot(line.s_) / plane.nd_.dot(line.v_));
     }
 }

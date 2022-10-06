@@ -2,42 +2,10 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 
-int main() {
-    // Инициализируем мир
-    Renderer::World world;
-    // Создаем и добавляем в мир красный отрезок, зеленую точку и синий треугольник
-    auto sector = Renderer::Sector(Eigen::Vector3d {0.1, 0.5, -3},
-                                   Eigen::Vector3d {-0.5, -0.5, -3},
-                                   {255, 0, 0});
-    auto point = Renderer::Point(Eigen::Vector3d {0, 0, -2},
-                                 {0, 255, 0});
-    auto triangle1 = Renderer::Triangle(Eigen::Vector3d {-1, -1, -5},
-                                       Eigen::Vector3d {-0.5, 0, -5},
-                                       Eigen::Vector3d {1, 1.5, -5},
-                                       {0, 0, 255});
-    auto triangle2 = Renderer::Triangle(Eigen::Vector3d {-0.5, -0.5, -4},
-                                        Eigen::Vector3d {-0.5, 0, -4},
-                                        Eigen::Vector3d {1, 1.5, -4},
-                                        {255, 255, 0});
-
-    world.add_point(point);
-    world.add_sector(sector);
-
-    world.add_triangle(triangle1);
-    world.add_triangle(triangle2);
-
-
-    // Переводим все объекты в координаты "куба зрения"
-    auto view_box = world.make_view_box();
-
-    // Создаем экран с разрешением 800 * 600 пикселей и отрисовываем все объекты на нем
-    int w = 800;
-    int h = 600;
-    Renderer::Screen screen(w, h);
-    view_box.map_to_pixels(screen);
-
-    // Рисуем экран одним из доступных нам способов
-    sf::RenderWindow window(sf::VideoMode(w, h), "Test renderer");
+void draw(const Renderer::Screen &screen) {
+    int w = screen.w;
+    int h = screen.h;
+    sf::RenderWindow window(sf::VideoMode(w, h), "Renderer");
     while (window.isOpen()) {
         // check all the window's events that were triggered since the last iteration of the loop
         sf::Event event;
@@ -68,4 +36,50 @@ int main() {
 
         window.display();
     }
+}
+
+int main() {
+    // Инициализируем мир
+    Renderer::World world;
+    // Создаем и добавляем в мир красный отрезок, зеленую точку и синий треугольник
+    auto sector = Renderer::Sector(Eigen::Vector3d {0.1, 0.5, -3},
+                                   Eigen::Vector3d {-0.5, -0.5, -3},
+                                   {255, 0, 0});
+    auto point = Renderer::Point(Eigen::Vector3d {0, 0, -2},
+                                 {0, 255, 0});
+    auto triangle1 = Renderer::Triangle(Eigen::Vector3d {-1, -10, -5},
+                                       Eigen::Vector3d {-1, 7, -5},
+                                       Eigen::Vector3d {2, 3, -5},
+                                       {0, 0, 255});
+    auto triangle2 = Renderer::Triangle(Eigen::Vector3d {-0.5, -0.5, -4},
+                                        Eigen::Vector3d {-0.5, 0, -4},
+                                        Eigen::Vector3d {1, 1.5, -4},
+                                        {255, 255, 0});
+
+    world.add_point(point);
+    world.add_sector(sector);
+    world.add_triangle(triangle1);
+    world.add_triangle(triangle2);
+
+    auto object = Renderer::Object();
+    object.add_triangle(triangle1);
+    object.add_triangle(triangle2);
+
+    object.translate({2, 1, -2});
+    object.rotate_local({1, 0, 1}, 3);
+
+    world.add_object(object);
+
+
+    // Переводим все объекты в координаты "куба зрения"
+    auto view_box = world.make_view_box();
+
+    // Создаем экран с разрешением 800 * 600 пикселей и отрисовываем все объекты на нем
+    int w = 800;
+    int h = 600;
+    Renderer::Screen screen(w, h);
+    view_box.map_to_pixels(screen);
+
+    // Рисуем экран одним из доступных нам способов
+    draw(screen);
 }

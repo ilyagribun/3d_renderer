@@ -4,6 +4,7 @@
 namespace Renderer {
     Frustum::Frustum(double l, double r, double b, double t, double n, double f) : l_(l), r_(r), b_(b), t_(t),
                                                                                              n_(n), f_(f) {
+        calc_planes();
         assert(l_ != r_);
         assert(b_ != t_);
         assert(n_ != f_);
@@ -17,6 +18,8 @@ namespace Renderer {
         t_ = t;
         n_ = n;
         f_ = f;
+        calc_planes();
+        calculate_matrix();
     }
 
     void Frustum::calculate_matrix() {
@@ -28,20 +31,32 @@ namespace Renderer {
         };
     }
 
-    Point Frustum::project(const Point &p) const {
-        return p.transform(proj_matrix_);
+    void Frustum::calc_planes() {
+        near_ = Plane({l_, b_, -1 * n_},
+                      {l_, t_, -1 * n_},
+                      {r_, b_, -1 * n_});
+        left_ = Plane({0, 0, 0},
+                      {l_, b_, -1 * n_},
+                      {l_, t_, -1 * n_});
+        right_ = Plane({0, 0, 0},
+                      {r_, t_, -1 * n_},
+                      {r_, b_, -1 * n_});
+        top_ = Plane({0, 0, 0},
+                      {l_, t_, -1 * n_},
+                      {r_, t_, -1 * n_});
+        bottom_ = Plane({0, 0, 0},
+                      {r_, b_, -1 * n_},
+                      {l_, b_, -1 * n_});
+        far_ = Plane({l_, b_, -1 * f_},
+                      {r_, b_, -1 * f_},
+                      {l_, t_, -1 * f_});
     }
 
-    Triangle Frustum::project(const Triangle &t) const {
-        return t.transform(proj_matrix_);
+    Eigen::Matrix4d Frustum::get_proj_matrix() const {
+        return proj_matrix_;
     }
 
-    Sector Frustum::project(const Sector &s) const {
-        return s.transform(proj_matrix_);
-    }
-
-    Object Frustum::project(Object o) const {
-        o.project(proj_matrix_);
-        return o;
+    std::vector<Plane> Frustum::get_planes() const {
+        return {near_, left_, right_, top_, bottom_, far_};
     }
 }

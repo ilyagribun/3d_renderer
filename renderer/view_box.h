@@ -18,7 +18,6 @@ namespace Renderer {
     };
 
     struct ViewBox {
-        std::vector<Object> objects_;
         std::vector<Triangle> triangles_;
         std::vector<Point> points_;
         std::vector<Sector> sectors_;

@@ -1,7 +1,7 @@
-
 #include "camera.h"
 #include "objects.h"
 #include "view_box.h"
+#include <optional>
 
 namespace Renderer {
     class World {
@@ -24,5 +24,16 @@ namespace Renderer {
 
         ViewBox make_view_box();
 
+
+        template <typename T>
+        T project(T obj) const {
+            return (obj.transform(frustum_.get_proj_matrix()));
+        }
+
+        std::optional<Point> clip_point(const Point& p) const;
+
+        std::optional<Sector> clip_sector(Sector s) const;
+
+        std::vector<Triangle> clip_triangle(const Triangle &t) const;
     };
 }

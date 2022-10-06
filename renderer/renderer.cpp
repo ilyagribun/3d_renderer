@@ -25,26 +25,122 @@ namespace Renderer {
 
     ViewBox World::make_view_box() {
         ViewBox view_box;
-        for (auto &point : points_) {
-            view_box.points_.emplace_back(frustum_.project(point));
-        }
-        for (auto &sector : sectors_) {
-            view_box.sectors_.emplace_back(frustum_.project(sector));
-        }
-        for (auto &triangle : triangles_) {
-            view_box.triangles_.emplace_back(frustum_.project(triangle));
-        }
 
         for (auto object : objects_) {
-            object = frustum_.project(object);
             auto new_points = object.get_points();
-            view_box.points_.insert(view_box.points_.end(), new_points.begin(), new_points.end());
+            points_.insert(points_.end(), new_points.begin(), new_points.end());
             auto new_sectors = object.get_sectors();
-            view_box.sectors_.insert(view_box.sectors_.end(), new_sectors.begin(), new_sectors.end());
+            sectors_.insert(sectors_.end(), new_sectors.begin(), new_sectors.end());
             auto new_triangles = object.get_triangles();
-            view_box.triangles_.insert(view_box.triangles_.end(), new_triangles.begin(), new_triangles.end());
+            triangles_.insert(triangles_.end(), new_triangles.begin(), new_triangles.end());
         }
 
+        for (auto &point : points_) {
+            auto p = clip_point(point);
+            if (p) {
+                view_box.points_.push_back(project(*p));
+            }
+        }
+        for (auto &sector : sectors_) {
+            auto s = clip_sector(sector);
+            if (s) {
+                view_box.sectors_.push_back(project(*s));
+            }
+        }
+        for (auto &triangle : triangles_) {
+            auto triangulated = clip_triangle(triangle);
+            for (auto t : triangulated) {
+                view_box.triangles_.push_back(project(t));
+            }
+        }
         return view_box;
+    }
+
+    std::optional<Point> World::clip_point(const Point& p) const {
+        for (const auto& plane : frustum_.get_planes()) {
+            if (plane.distance(p.p_) < 0) {
+                return {};
+            }
+        }
+        return p;
+    }
+
+    std::optional<Sector> World::clip_sector(Sector s) const {
+        for (const auto& plane : frustum_.get_planes()) {
+            if (plane.distance(s.p1_) < 0 && plane.distance(s.p2_) < 0) {
+                return {};
+            }
+            if (plane.distance(s.p1_) >= 0 && plane.distance(s.p2_) >= 0) {
+                continue;
+            }
+            Eigen::Vector4d new_point = plane_line_intersection(Line(s), plane);
+            if (plane.distance(s.p1_) < 0) {
+                s = Sector(new_point, s.p2_, s.color_);
+            } else {
+                s = Sector(s.p1_, new_point, s.color_);
+            }
+        }
+        return s;
+    }
+
+    std::vector<Triangle> World::clip_triangle(const Triangle& t) const {
+        std::vector<Triangle> triangulated{t};
+        for (const auto &plane : frustum_.get_planes()) {
+            std::vector<Triangle> tmp;
+            for (const auto& triangle : triangulated) {
+                auto p1_dist = plane.distance(triangle.p1_);
+                auto p2_dist = plane.distance(triangle.p2_);
+                auto p3_dist = plane.distance(triangle.p3_);
+                // check three cases:
+                // triangle inside the plane
+                if (p1_dist >= 0 && p2_dist >= 0 && p3_dist >= 0) {
+                    tmp.push_back(triangle);
+                } else if (p1_dist * p2_dist * p3_dist <= 0) { // vertex p1 outside
+                    Eigen::Vector4d p1, p2, p3;
+                    if (p1_dist < 0) {
+                        p1 = triangle.p1_;
+                        p2 = triangle.p2_;
+                        p3 = triangle.p3_;
+                    } else if (p2_dist < 0) {
+                        p1 = triangle.p2_;
+                        p2 = triangle.p3_;
+                        p3 = triangle.p1_;
+                    } else if (p3_dist < 0) {
+                        p1 = triangle.p3_;
+                        p2 = triangle.p1_;
+                        p3 = triangle.p2_;
+                    }
+                    auto ab1 = clip_sector({p3, p1, triangle.color_});
+                    auto b2c = clip_sector({p1, p2, triangle.color_});
+//                    auto new_triangles = Triangle::triangulate({ab1->p1_,
+//                                                                ab1->p2_,
+//                                                                b2c->p1_,
+//                                                                b2c->p2_}, triangle.color_);
+                    tmp.emplace_back(p3, ab1->p2_, b2c->p1_, triangle.color_);
+                    tmp.emplace_back(p3, b2c->p1_, p2, triangle.color_);
+//                    tmp.insert(tmp.end(), new_triangles.begin(), new_triangles.end());
+                } else {
+                    Eigen::Vector4d p1, p2, p3;
+                    if (p1_dist >= 0) {
+                        p1 = triangle.p1_;
+                        p2 = triangle.p2_;
+                        p3 = triangle.p3_;
+                    } else if (p2_dist >= 0) {
+                        p1 = triangle.p2_;
+                        p2 = triangle.p3_;
+                        p3 = triangle.p1_;
+                    } else if (p3_dist >= 0) {
+                        p1 = triangle.p3_;
+                        p2 = triangle.p1_;
+                        p3 = triangle.p2_;
+                    }
+                    auto ab = clip_sector({p1, p2, triangle.color_});
+                    auto ca = clip_sector({p3, p1, triangle.color_});
+                    tmp.emplace_back(ab->p1_, ab->p2_, ca->p1_, triangle.color_);
+                }
+            }
+            triangulated = tmp;
+        }
+        return triangulated;
     }
 }

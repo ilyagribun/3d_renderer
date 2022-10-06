@@ -5,20 +5,19 @@
 namespace Renderer {
     class Frustum {
         double l_, r_, b_, t_, n_, f_;
+        Plane left_, right_, top_, bottom_, far_, near_;
         Eigen::Matrix4d proj_matrix_;
     public:
         Frustum(double l, double r, double b, double t, double n, double f);
 
         void change_params(double l, double r, double b, double t, double n, double f);
 
+        void calc_planes();
+
         void calculate_matrix();
 
-        Renderer::Point project(const Renderer::Point &p) const;
+        Eigen::Matrix4d get_proj_matrix() const;
 
-        Triangle project(const Triangle &t) const;
-
-        Sector project(const Sector &s) const;
-
-        Object project(Object o) const;
+        std::vector<Plane> get_planes() const;
     };
 }

@@ -1,7 +1,3 @@
-//
-// Created by Илья Григорьев on 28.09.2022.
-//
-
 #include "view_box.h"
 #include <iostream>
 
@@ -14,19 +10,22 @@ namespace Renderer {
     }
 
     std::pair<int, int> Screen::rasterize_point(double x, double y) const {
-        assert(x <= 1 && x >= -1);
-        assert(y <= 1 && y >= -1);
         int i, j;
-        if (x == 1) {
+        if (x >= 1) {
             i = w - 1;
+        } else if (x <= -1) {
+            i = 0;
         } else {
             i = int((x + 1.)/2 * w);
         }
-        if (y == 1) {
+        if (y >= 1) {
             j = h - 1;
+        } else if (y <= -1) {
+            j = 0;
         } else {
             j = int((y + 1.)/2 * h);
         }
+
         return std::pair<int, int>(i, j);
     }
 
@@ -116,10 +115,10 @@ namespace Renderer {
         int bottom = std::min(std::min(j1, j2), j3);
         int top = std::max(std::max(j1, j2), j3);
 
-        for (int i = left; i < right; ++i) {
+        for (int i = left; i <= std::min(right, w - 1); ++i) {
             int from = -1;
             int to = -1;
-            for (int j = bottom; j < top; ++j) {
+            for (int j = bottom; j <= std::min(top, h - 1); ++j) {
                 if (tmp_screen.z_buffer(i, j) < 2) {
                     if (from == -1) {
                         from = j;
