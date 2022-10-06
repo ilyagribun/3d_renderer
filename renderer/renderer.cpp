@@ -26,7 +26,7 @@ namespace Renderer {
     ViewBox World::make_view_box() {
         ViewBox view_box;
 
-        for (auto object : objects_) {
+        for (const auto &object : objects_) {
             auto new_points = object.get_points();
             points_.insert(points_.end(), new_points.begin(), new_points.end());
             auto new_sectors = object.get_sectors();
@@ -49,7 +49,7 @@ namespace Renderer {
         }
         for (auto &triangle : triangles_) {
             auto triangulated = clip_triangle(triangle);
-            for (auto t : triangulated) {
+            for (const auto& t : triangulated) {
                 view_box.triangles_.push_back(project(t));
             }
         }
@@ -95,6 +95,8 @@ namespace Renderer {
                 // triangle inside the plane
                 if (p1_dist >= 0 && p2_dist >= 0 && p3_dist >= 0) {
                     tmp.push_back(triangle);
+                } else if (p1_dist < 0 && p2_dist < 0 && p3_dist < 0) {
+                    continue;
                 } else if (p1_dist * p2_dist * p3_dist <= 0) { // vertex p1 outside
                     Eigen::Vector4d p1, p2, p3;
                     if (p1_dist < 0) {
@@ -112,13 +114,8 @@ namespace Renderer {
                     }
                     auto ab1 = clip_sector({p3, p1, triangle.color_});
                     auto b2c = clip_sector({p1, p2, triangle.color_});
-//                    auto new_triangles = Triangle::triangulate({ab1->p1_,
-//                                                                ab1->p2_,
-//                                                                b2c->p1_,
-//                                                                b2c->p2_}, triangle.color_);
                     tmp.emplace_back(p3, ab1->p2_, b2c->p1_, triangle.color_);
                     tmp.emplace_back(p3, b2c->p1_, p2, triangle.color_);
-//                    tmp.insert(tmp.end(), new_triangles.begin(), new_triangles.end());
                 } else {
                     Eigen::Vector4d p1, p2, p3;
                     if (p1_dist >= 0) {

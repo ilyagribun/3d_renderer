@@ -132,7 +132,7 @@ namespace Renderer {
                     if (from == to) {
                         dz = 1;
                     } else {
-                        dz = ((j - from) * 1.0) / (from - to);
+                        dz = ((j - from) * 1.0) / (to - from);
                     }
                     put_pixel(i, j, {tmp_screen.r(i, from), tmp_screen.g(i, from), tmp_screen.b(i, from)},
                               tmp_screen.z_buffer(i, from) * dz + tmp_screen.z_buffer(i, to) * (1 - dz));

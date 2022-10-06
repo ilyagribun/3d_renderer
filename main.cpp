@@ -38,7 +38,7 @@ void draw(const Renderer::Screen &screen) {
     }
 }
 
-int main() {
+void example1() {
     // Инициализируем мир
     Renderer::World world;
     // Создаем и добавляем в мир красный отрезок, зеленую точку и синий треугольник
@@ -48,9 +48,9 @@ int main() {
     auto point = Renderer::Point(Eigen::Vector3d {0, 0, -2},
                                  {0, 255, 0});
     auto triangle1 = Renderer::Triangle(Eigen::Vector3d {-1, -10, -5},
-                                       Eigen::Vector3d {-1, 7, -5},
-                                       Eigen::Vector3d {2, 3, -5},
-                                       {0, 0, 255});
+                                        Eigen::Vector3d {-1, 7, -5},
+                                        Eigen::Vector3d {2, 3, -5},
+                                        {0, 0, 255});
     auto triangle2 = Renderer::Triangle(Eigen::Vector3d {-0.5, -0.5, -4},
                                         Eigen::Vector3d {-0.5, 0, -4},
                                         Eigen::Vector3d {1, 1.5, -4},
@@ -82,4 +82,69 @@ int main() {
 
     // Рисуем экран одним из доступных нам способов
     draw(screen);
+}
+
+void example2() {
+    Renderer::World world;
+
+    Eigen::Vector3d p1, p2, p3, p4, p5, p6;
+    p1 = {1, 0, 0};
+    p2 = {0, 1, 0};
+    p3 = {-1, 0, 0};
+    p4 = {0, -1, 0};
+    p5 = {0, 0, -1};
+    p6 = {0, 0, 1};
+
+    Renderer::Object obj;
+    obj.add_triangle({p1, p2, p6, {255, 255, 0}});
+    obj.add_triangle({p2, p3, p6, {255, 0, 255}});
+    obj.add_triangle({p3, p4, p6, {0, 255, 255}});
+    obj.add_triangle({p1, p4, p6, {255, 0, 0}});
+    obj.add_triangle({p1, p2, p5, {0, 255, 0}});
+    obj.add_triangle({p2, p3, p5, {0, 0, 255}});
+    obj.add_triangle({p3, p4, p5, {50, 255, 255}});
+    obj.add_triangle({p1, p4, p5, {255, 70, 50}});
+
+    obj.rotate_global({0, 1, 0}, 3);
+    obj.translate({0, 0, -5});
+
+    world.add_object(obj);
+
+    // Переводим все объекты в координаты "куба зрения"
+    auto view_box = world.make_view_box();
+
+    // Создаем экран с разрешением 800 * 600 пикселей и отрисовываем все объекты на нем
+    int w = 1024;
+    int h = 1024;
+    Renderer::Screen screen(w, h);
+    view_box.map_to_pixels(screen);
+
+    // Рисуем экран одним из доступных нам способов
+    draw(screen);
+}
+
+void example3() {
+    Renderer::World world;
+
+    for (int i = 0; i < 10000; ++i) {
+        world.add_triangle({Eigen::Vector3d {-1, -10, -1000},
+                               Eigen::Vector3d {-1, 7, -1000},
+                               Eigen::Vector3d {2, 3, -1000},
+                               {0, 0, 255}});
+    }
+    // Переводим все объекты в координаты "куба зрения"
+    auto view_box = world.make_view_box();
+
+    // Создаем экран с разрешением 800 * 600 пикселей и отрисовываем все объекты на нем
+    int w = 800;
+    int h = 600;
+    Renderer::Screen screen(w, h);
+    view_box.map_to_pixels(screen);
+
+    // Рисуем экран одним из доступных нам способов
+    draw(screen);
+}
+
+int main() {
+    example3();
 }
